@@ -3,6 +3,7 @@ package phase1;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class KMeans {
 	private String f;	// File name
@@ -11,6 +12,7 @@ public class KMeans {
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
 	private ArrayList<Double> attributes; // Holds all values from txt file
+	private int numOfPoints;
 	
 	public KMeans(String a, int b, int c, double d, int e) {
 		f = a;
@@ -52,14 +54,23 @@ public class KMeans {
 			String line = null;
 			while ((line = lineReader.readLine())!=null) {
 				String[] token = line.split(" ");
-				String numOfPoints = token[0];
+				numOfPoints = Integer.parseInt(token[0]);
 				String dimensionality = token[1];
 				for( int i = 2; i < token.length; i++) {
 					attributes.add(Double.parseDouble(token[i]));
 				}	
 			}
 		} catch (Exception e) {
-			System.err.println("there was a problem with the file reader, try different read type.");
+			System.err.println("There was a problem with the file reader.");
+		}
+	}
+	
+	public void kMeans() {
+		readFile();
+		int centroids[] = new int[k];
+		for (int i = 0; i < k; i++) {
+			Random rand = new Random();
+			centroids[i] = rand.nextInt(numOfPoints);
 		}
 	}
 	
