@@ -11,7 +11,7 @@ public class KMeans {
 	private int i;		// Max iterations
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
-	private ArrayList<Points> points;
+	private ArrayList<Points> points = new ArrayList<Points>();
 	private int numOfPoints;
 	private int dimensionality;
 	
@@ -53,17 +53,17 @@ public class KMeans {
 			FileReader fr = new FileReader("./" + f);
 			lineReader = new BufferedReader(fr);
 			String line = null;
+			line = lineReader.readLine();
+			String[] token = line.split(" ");
+			numOfPoints = Integer.parseInt(token[0]);
+			dimensionality = Integer.parseInt(token[1]);
 			while ((line = lineReader.readLine())!=null) {
-				String[] token = line.split(" ");
-				String[] token2 = line.split("\n");
-				numOfPoints = Integer.parseInt(token[0]);
-				dimensionality = Integer.parseInt(token[1]);
-				for(int i = 1; i < token2.length; i++) {
-					Points temp = new Points();
-					for(int j = 0; j < token.length; j++)
-						temp.addAttributes(Double.parseDouble(token[j]));
-					points.add(temp);
+				String[] token2 = line.split(" ");
+				Points temp = new Points();
+				for(int i = 0; i < token2.length; i++) {
+					temp.addAttributes(Double.parseDouble(token2[i]));
 				}
+				points.add(temp);
 			}
 		} catch (Exception e) {
 			System.err.println("There was a problem with the file reader.");

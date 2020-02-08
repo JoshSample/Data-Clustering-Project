@@ -16,4 +16,8 @@ public class Points {
 	public ArrayList<Double> getAttributes() {
 		return attribute;
 	}
+	
+	public String toString() {
+		return attribute.toString();
+	}
 }

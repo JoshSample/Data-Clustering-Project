@@ -14,8 +14,6 @@ public class Main {
 		int r = Integer.parseInt(args[4]);
 		
 		KMeans cluster = new KMeans(f, k, i, t, r);
-		cluster.readFile();
-		System.out.print(cluster.getPoints());
 	}
 
 }
