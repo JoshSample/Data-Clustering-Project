@@ -12,8 +12,10 @@ public class KMeans {
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
 	private ArrayList<Points> points = new ArrayList<Points>();
+	private ArrayList<Points> clusteredPoints = new ArrayList<Points>();
 	private int numOfPoints;
 	private int dimensionality;
+	private int[] centroids = new int[k];
 	
 	public KMeans(String a, int b, int c, double d, int e) {
 		f = a;
@@ -47,6 +49,9 @@ public class KMeans {
 		return points;
 	}
 	
+	// reads file, parsed data is as follows:
+	// after the first line, each line is a point and thus stored in ArrayList<Points>
+	// each attribute in the lines, separated by blanks, are new attributes for a given point
 	public void readFile() {
 		BufferedReader lineReader = null;
 		try {
@@ -70,14 +75,59 @@ public class KMeans {
 		}
 	}
 	
+	// Since we only need to compare distance between a point and a centroid,
+	// this isn't a perfect implementation of euclidean distance as it would
+	// typically have a sqrt function. This however keeps computation time down.
+	public double euclideanDistance(Points a, Points b) { 
+		double total = 0;
+		double diff;
+		for (int i = 0; i < a.getAttributes().size(); i++) {
+			diff = b.getAttributes().get(i) - a.getAttributes().get(i);
+			total += diff * diff;
+		}
+		return total;
+	}
 	
+	// randomly generates initial centroids
+	public void initCentroids() {
+		Random rand = new Random();
+		for (int i = 0; i < k; i++) {
+			centroids[i] = rand.nextInt(numOfPoints);
+			clusteredPoints.add(points.get(centroids[i]));
+		}
+	}
+	
+	public int calculateCentroids() {
+		return 0;
+	}
+	
+	public int classifyPoint(int j) {
+		double distance = 0;
+		double min = Double.MAX_VALUE;
+		int index = 0;
+		for (int i = 0; i < k; i++) {
+			distance = euclideanDistance(points.get(j), points.get(centroids[i]));
+			if (distance < min) {
+				min = distance;
+				index = i;
+			}
+		}
+		return index;
+	}
 	
 	public void kMeans() {
 		readFile();
-		int centroids[] = new int[k];
-		for (int i = 0; i < k; i++) {
-			Random rand = new Random();
-			centroids[i] = rand.nextInt(numOfPoints);
+		int counter = 0;
+		boolean improvement = true;
+		for (int i = 0; i < r; i++) {
+			initCentroids();
+			while (counter < i || improvement == false) {
+				for (int j = 0; j < numOfPoints; j++) {
+					int index = classifyPoint(j);
+					clusteredPoints.add(points.get(index));
+				}
+				
+			}
 		}
 	}
 	
