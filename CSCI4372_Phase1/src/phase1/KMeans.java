@@ -3,6 +3,7 @@ package phase1;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 public class KMeans {
@@ -12,7 +13,7 @@ public class KMeans {
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
 	private ArrayList<Points> points = new ArrayList<Points>();
-	private ArrayList<Points> clusteredPoints = new ArrayList<Points>();
+	private HashMap<Points, Points> clusteredPoints = new HashMap<Points, Points>();
 	private int numOfPoints;
 	private int dimensionality;
 	private int[] centroids = new int[k];
@@ -93,7 +94,7 @@ public class KMeans {
 		Random rand = new Random();
 		for (int i = 0; i < k; i++) {
 			centroids[i] = rand.nextInt(numOfPoints);
-			clusteredPoints.add(points.get(centroids[i]));
+			clusteredPoints.put(points.get(centroids[i]), points.get(centroids[i]));
 		}
 	}
 	
@@ -115,18 +116,25 @@ public class KMeans {
 		return index;
 	}
 	
+	public double sumOfSquaredErrors() {
+		double sse = 0;
+		
+		
+		return sse;
+	}
+	
 	public void kMeans() {
 		readFile();
 		int counter = 0;
 		boolean improvement = true;
-		for (int i = 0; i < r; i++) {
+		for (int a = 0; a < r; a++) {
 			initCentroids();
-			while (counter < i || improvement == false) {
+			while (counter < this.i || improvement == false) {
 				for (int j = 0; j < numOfPoints; j++) {
 					int index = classifyPoint(j);
-					clusteredPoints.add(points.get(index));
+					clusteredPoints.put(points.get(centroids[index]), points.get(j));
 				}
-				
+				counter++;
 			}
 		}
 	}
