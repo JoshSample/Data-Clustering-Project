@@ -13,10 +13,10 @@ public class KMeans {
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
 	private ArrayList<Points> points = new ArrayList<Points>();
-	private HashMap<Points, Points> clusteredPoints = new HashMap<Points, Points>();
+	private HashMap<Points, ArrayList<Points>> clusteredPoints = new HashMap<Points, ArrayList<Points>>();
 	private int numOfPoints;
 	private int dimensionality;
-	private int[] centroids = new int[k];
+	private int[] centroids;
 	
 	public KMeans(String a, int b, int c, double d, int e) {
 		f = a;
@@ -24,6 +24,7 @@ public class KMeans {
 		i = c;
 		t = d;
 		r = e;
+		centroids = new int[k];
 	}
 	
 	public String getFName() {
@@ -118,7 +119,10 @@ public class KMeans {
 	
 	public double sumOfSquaredErrors() {
 		double sse = 0;
-		
+		double centroid = 0;
+		for (int a = 0; a < k; a++) {
+			centroid = clusteredPoints.get(points.get(centroids[a])).sumAttributes();
+		}
 		
 		return sse;
 	}
@@ -134,6 +138,7 @@ public class KMeans {
 					int index = classifyPoint(j);
 					clusteredPoints.put(points.get(centroids[index]), points.get(j));
 				}
+				sumOfSquaredErrors();
 				counter++;
 			}
 		}

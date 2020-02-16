@@ -17,6 +17,14 @@ public class Points {
 		return attribute;
 	}
 	
+	public double sumAttributes() {
+		double sum = 0;
+		for (int i = 0; i < attribute.size(); i++) {
+			sum += attribute.get(i);
+		}
+		return sum;
+	}
+	
 	public String toString() {
 		return attribute.toString();
 	}
