@@ -15,7 +15,7 @@ public class KMeans {
 	private Points[][] clusteredPoints;
 	private int numOfPoints;
 	private int dimensionality;
-	private int[] centroids;
+	private double[] centroids;
 	private double sse;
 	
 	public KMeans(String a, int b, int c, double d, int e) {
@@ -24,7 +24,7 @@ public class KMeans {
 		i = c;
 		t = d;
 		r = e;
-		centroids = new int[k];
+		centroids = new double[k];
 	}
 	
 	public String getFName() {
@@ -96,12 +96,23 @@ public class KMeans {
 		Random rand = new Random();
 		for (int i = 0; i < k; i++) {
 			centroids[i] = rand.nextInt(numOfPoints);
-			clusteredPoints[i][0] = points.get(centroids[i]);
+			clusteredPoints[i][0] = points.get((int)centroids[i]);
 		}
 	}
 	
-	public int calculateCentroids() {
-		return 0;
+	public void calculateCentroids() {
+		double size = 0;
+		double sum = 0;
+		for (int a = 0; a < k; a++) {
+			for (int b = 0; b < numOfPoints; b++) {
+				if (clusteredPoints[a][b] != null) {
+					double point = points.get(b).sumAttributes();
+					sum += point;
+					size++;
+				}
+			}
+			centroids[a] = sum / size;
+		}
 	}
 	
 	// classifies points based on euclidean distance
@@ -110,7 +121,7 @@ public class KMeans {
 		double min = Double.MAX_VALUE;
 		int index = 0;
 		for (int i = 0; i < k; i++) {
-			distance = euclideanDistance(points.get(j), points.get(centroids[i]));
+			distance = euclideanDistance(points.get(j), clusteredPoints[i][0]);
 			if (distance < min) {
 				min = distance;
 				index = i;
@@ -123,7 +134,7 @@ public class KMeans {
 		sse = 0;
 		double centroid;
 		for (int a = 0; a < k; a++) {
-			centroid = points.get(centroids[a]).sumAttributes();
+			centroid = clusteredPoints[a][0].sumAttributes();
 			for (int b = 0; b < numOfPoints; b++) {
 				if (clusteredPoints[a][b] != null) {
 					double point = points.get(b).sumAttributes();
@@ -138,11 +149,12 @@ public class KMeans {
 	
 	public void kMeans() {
 		readFile();
-		int counter = 1;
-		boolean improvement = true;
 		for (int a = 0; a < r; a++) {
+			System.out.println("\nRun " + (a + 1) + "\n" + "----");
 			initCentroids();
-			while (counter <= this.i || improvement == true) {
+			int counter = 1;
+			boolean improvement = true;
+			while (counter <= this.i && improvement == true) {
 				for (int j = 0; j < numOfPoints; j++) {
 					int index = classifyPoint(j);
 					clusteredPoints[index][j] = points.get(index);
@@ -159,5 +171,6 @@ public class KMeans {
 			}
 		}
 	}
+
 	
 }
