@@ -3,7 +3,6 @@ package phase1;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 public class KMeans {
@@ -13,10 +12,11 @@ public class KMeans {
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
 	private ArrayList<Points> points = new ArrayList<Points>();
-	private HashMap<Points, ArrayList<Points>> clusteredPoints = new HashMap<Points, ArrayList<Points>>();
+	private Points[][] clusteredPoints;
 	private int numOfPoints;
 	private int dimensionality;
 	private int[] centroids;
+	private double sse;
 	
 	public KMeans(String a, int b, int c, double d, int e) {
 		f = a;
@@ -64,6 +64,7 @@ public class KMeans {
 			String[] token = line.split(" ");
 			numOfPoints = Integer.parseInt(token[0]);
 			dimensionality = Integer.parseInt(token[1]);
+			clusteredPoints = new Points[k][numOfPoints];
 			while ((line = lineReader.readLine())!=null) {
 				String[] token2 = line.split(" ");
 				Points temp = new Points();
@@ -95,7 +96,7 @@ public class KMeans {
 		Random rand = new Random();
 		for (int i = 0; i < k; i++) {
 			centroids[i] = rand.nextInt(numOfPoints);
-			clusteredPoints.put(points.get(centroids[i]), points.get(centroids[i]));
+			clusteredPoints[i][0] = points.get(centroids[i]);
 		}
 	}
 	
@@ -103,6 +104,7 @@ public class KMeans {
 		return 0;
 	}
 	
+	// classifies points based on euclidean distance
 	public int classifyPoint(int j) {
 		double distance = 0;
 		double min = Double.MAX_VALUE;
@@ -118,31 +120,44 @@ public class KMeans {
 	}
 	
 	public double sumOfSquaredErrors() {
-		double sse = 0;
-		double centroid = 0;
+		sse = 0;
+		double centroid;
 		for (int a = 0; a < k; a++) {
-			centroid = clusteredPoints.get(points.get(centroids[a])).sumAttributes();
+			centroid = points.get(centroids[a]).sumAttributes();
+			for (int b = 0; b < numOfPoints; b++) {
+				if (clusteredPoints[a][b] != null) {
+					double point = points.get(b).sumAttributes();
+					double diff = point - centroid;
+					diff *= diff;
+					sse += diff;
+				}
+			}
 		}
-		
 		return sse;
 	}
 	
 	public void kMeans() {
 		readFile();
-		int counter = 0;
+		int counter = 1;
 		boolean improvement = true;
 		for (int a = 0; a < r; a++) {
 			initCentroids();
-			while (counter < this.i || improvement == false) {
+			while (counter <= this.i || improvement == true) {
 				for (int j = 0; j < numOfPoints; j++) {
 					int index = classifyPoint(j);
-					clusteredPoints.put(points.get(centroids[index]), points.get(j));
+					clusteredPoints[index][j] = points.get(index);
 				}
-				sumOfSquaredErrors();
+				double sse1 = sse;
+				double sse2 = sumOfSquaredErrors();
+				System.out.println("Iteration " + counter + ": SSE = " + sse2);
+				if (counter > 1) {
+					if ((sse1 - sse2) / sse1 < t)
+						improvement = false;
+				}
+				calculateCentroids();
 				counter++;
 			}
 		}
 	}
-	
 	
 }
