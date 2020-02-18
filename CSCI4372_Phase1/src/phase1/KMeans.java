@@ -85,8 +85,14 @@ public class KMeans {
 		double total = 0;
 		double diff;
 		for (int i = 0; i < a.getAttributes().size(); i++) {
-			diff = b.getAttributes().get(i) - a.getAttributes().get(i);
-			total += diff * diff;
+			if (b.getAttributes().size() > 1) {
+				diff = b.getAttributes().get(i) - a.getAttributes().get(i);
+				total += diff * diff;
+			}
+			else {
+				diff = b.getAttributes().get(0) - a.getAttributes().get(i);
+				total += diff * diff;
+			}
 		}
 		return total;
 	}
@@ -112,6 +118,9 @@ public class KMeans {
 				}
 			}
 			centroids[a] = sum / size;
+			Points point = new Points();
+			point.addAttributes(centroids[a]);
+			clusteredPoints[a][0] = point;
 		}
 	}
 	
@@ -150,7 +159,7 @@ public class KMeans {
 	public void kMeans() {
 		readFile();
 		for (int a = 0; a < r; a++) {
-			System.out.println("\nRun " + (a + 1) + "\n" + "----");
+			System.out.println("\nRun " + (a + 1) + "\n" + "-----");
 			initCentroids();
 			int counter = 1;
 			boolean improvement = true;
@@ -169,6 +178,7 @@ public class KMeans {
 				calculateCentroids();
 				counter++;
 			}
+			
 		}
 	}
 
