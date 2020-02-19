@@ -1,7 +1,9 @@
 package phase1;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -158,27 +160,36 @@ public class KMeans {
 	
 	public void kMeans() {
 		readFile();
-		for (int a = 0; a < r; a++) {
-			System.out.println("\nRun " + (a + 1) + "\n" + "-----");
-			initCentroids();
-			int counter = 1;
-			boolean improvement = true;
-			while (counter <= this.i && improvement == true) {
-				for (int j = 0; j < numOfPoints; j++) {
-					int index = classifyPoint(j);
-					clusteredPoints[index][j] = points.get(index);
+		try {
+			FileWriter fw = new FileWriter("results.txt");
+			BufferedWriter myOutfile = new BufferedWriter(fw);
+			for (int a = 0; a < r; a++) {
+				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
+				initCentroids();
+				int counter = 1;
+				boolean improvement = true;
+				while (counter <= this.i && improvement == true) {
+					for (int j = 0; j < numOfPoints; j++) {
+						int index = classifyPoint(j);
+						clusteredPoints[index][j] = points.get(index);
+					}
+					double sse1 = sse;
+					double sse2 = sumOfSquaredErrors();
+					myOutfile.write("Iteration " + counter + ": SSE = " + sse2 + "\n");
+					if (counter > 1) {
+						if ((sse1 - sse2) / sse1 < t)
+							improvement = false;
+					}
+					calculateCentroids();
+					counter++;
 				}
-				double sse1 = sse;
-				double sse2 = sumOfSquaredErrors();
-				System.out.println("Iteration " + counter + ": SSE = " + sse2);
-				if (counter > 1) {
-					if ((sse1 - sse2) / sse1 < t)
-						improvement = false;
-				}
-				calculateCentroids();
-				counter++;
+				
 			}
-			
+			myOutfile.flush();
+			myOutfile.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Could not save results.");
 		}
 	}
 
