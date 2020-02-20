@@ -17,8 +17,9 @@ public class KMeans {
 	private Points[][] clusteredPoints;
 	private int numOfPoints;
 	private int dimensionality;
-	private double[] centroids;
 	private double sse;
+	private int bestRun;
+	private double bestSSE;
 	
 	public KMeans(String a, int b, int c, double d, int e) {
 		f = a;
@@ -26,7 +27,6 @@ public class KMeans {
 		i = c;
 		t = d;
 		r = e;
-		centroids = new double[k];
 	}
 	
 	public String getFName() {
@@ -66,7 +66,7 @@ public class KMeans {
 			String[] token = line.split(" ");
 			numOfPoints = Integer.parseInt(token[0]);
 			dimensionality = Integer.parseInt(token[1]);
-			clusteredPoints = new Points[k][numOfPoints];
+			clusteredPoints = new Points[k][numOfPoints+1];
 			while ((line = lineReader.readLine())!=null) {
 				String[] token2 = line.split(" ");
 				Points temp = new Points();
@@ -86,15 +86,9 @@ public class KMeans {
 	public double euclideanDistance(Points a, Points b) { 
 		double total = 0;
 		double diff;
-		for (int i = 0; i < a.getAttributes().size(); i++) {
-			if (b.getAttributes().size() > 1) {
-				diff = b.getAttributes().get(i) - a.getAttributes().get(i);
-				total += diff * diff;
-			}
-			else {
-				diff = b.getAttributes().get(0) - a.getAttributes().get(i);
-				total += diff * diff;
-			}
+		for (int i = 0; i < dimensionality; i++) {
+			diff = b.getAttributes().get(i) - a.getAttributes().get(i);
+			total += diff * diff;
 		}
 		return total;
 	}
@@ -103,26 +97,37 @@ public class KMeans {
 	public void initCentroids() {
 		Random rand = new Random();
 		for (int i = 0; i < k; i++) {
-			centroids[i] = rand.nextInt(numOfPoints);
-			clusteredPoints[i][0] = points.get((int)centroids[i]);
+			int x = rand.nextInt(numOfPoints);
+			clusteredPoints[i][0] = points.get(x);
 		}
 	}
 	
 	public void calculateCentroids() {
+		double[] attributes = new double[dimensionality];
+		for (int a = 0; a < dimensionality; a++) {
+			attributes[a] = 0;
+		}
 		double size = 0;
-		double sum = 0;
 		for (int a = 0; a < k; a++) {
 			for (int b = 0; b < numOfPoints; b++) {
 				if (clusteredPoints[a][b] != null) {
-					double point = points.get(b).sumAttributes();
-					sum += point;
 					size++;
+					for (int c = 0; c < dimensionality; c++) {
+						attributes[c] += clusteredPoints[a][b].getAttributes().get(c);
+					}
 				}
 			}
-			centroids[a] = sum / size;
 			Points point = new Points();
-			point.addAttributes(centroids[a]);
+			for (int b = 0; b < dimensionality; b++) {
+				attributes[b] = attributes[b]/size;
+				point.addAttributes(attributes[b]);
+			}
 			clusteredPoints[a][0] = point;
+		}
+		for (int a = 0; a < k; a++) {
+			for (int b = 1; b < numOfPoints; b++) {
+				clusteredPoints[a][b] = null;
+			}
 		}
 	}
 	
@@ -160,6 +165,8 @@ public class KMeans {
 	
 	public void kMeans() {
 		readFile();
+		bestRun = Integer.MAX_VALUE;
+		bestSSE = Double.MAX_VALUE;
 		try {
 			FileWriter fw = new FileWriter("results.txt");
 			BufferedWriter myOutfile = new BufferedWriter(fw);
@@ -171,20 +178,26 @@ public class KMeans {
 				while (counter <= this.i && improvement == true) {
 					for (int j = 0; j < numOfPoints; j++) {
 						int index = classifyPoint(j);
-						clusteredPoints[index][j] = points.get(index);
+						clusteredPoints[index][j+1] = points.get(j);
 					}
 					double sse1 = sse;
 					double sse2 = sumOfSquaredErrors();
 					myOutfile.write("Iteration " + counter + ": SSE = " + sse2 + "\n");
 					if (counter > 1) {
-						if ((sse1 - sse2) / sse1 < t)
+						if ((sse1 - sse2) / sse1 < t) {
 							improvement = false;
+							if (sse2 < bestSSE) {
+								bestSSE = sse2;
+								bestRun = a + 1;
+							}
+						}
 					}
 					calculateCentroids();
 					counter++;
 				}
-				
 			}
+			myOutfile.write("\nBest Run: " + bestRun + ": SSE = " + bestSSE);
+			
 			myOutfile.flush();
 			myOutfile.close();
 		} catch (Exception e) {
