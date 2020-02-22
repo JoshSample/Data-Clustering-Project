@@ -157,7 +157,7 @@ public class KMeans {
 		
 		// code wrapped in try/catch due to file writing
 		try {
-			FileWriter fw = new FileWriter("results.txt");	// results stored in file "results.txt"
+			FileWriter fw = new FileWriter("results_" + f);	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
 			
