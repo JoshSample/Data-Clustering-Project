@@ -1,5 +1,9 @@
 package phase1;
 
+//Joshua Sample
+//CSCI 4372
+//Phase 1: Basic K-Means
+
 import java.util.ArrayList;
 
 public class Points {

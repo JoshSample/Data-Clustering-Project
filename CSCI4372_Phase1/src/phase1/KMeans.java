@@ -1,5 +1,9 @@
 package phase1;
 
+//Joshua Sample
+//CSCI 4372
+//Phase 1: Basic K-Means
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -13,44 +17,21 @@ public class KMeans {
 	private int i;		// Max iterations
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
-	private ArrayList<Points> points = new ArrayList<Points>();
-	private Points[][] clusteredPoints;
-	private int numOfPoints;
-	private int dimensionality;
-	private double sse;
-	private int bestRun;
-	private double bestSSE;
+	private ArrayList<Points> points = new ArrayList<Points>(); 	// Holds the points read from file
+	private Points[][] clusteredPoints; 	// Holds clusters
+	private int numOfPoints;	// Number of points, obtained from file
+	private int dimensionality;	// Dimensionality of points, obtained from file
+	private double sse;	// tracks SSE value
+	private int bestRun;	// tracks best run (lowest SSE value)
+	private double bestSSE;	// tracks best SSE (lowest SSE value)
 	
+	// default constructor, sets values from command line
 	public KMeans(String a, int b, int c, double d, int e) {
 		f = a;
 		k = b;
 		i = c;
 		t = d;
 		r = e;
-	}
-	
-	public String getFName() {
-		return f;
-	}
-	
-	public int getClusters() {
-		return k;
-	}
-	
-	public int getIters() {
-		return i;
-	}
-	
-	public double getThreshold() {
-		return t;
-	}
-	
-	public int getRuns() {
-		return r;
-	}
-	
-	public ArrayList<Points> getPoints() {
-		return points;
 	}
 	
 	// reads file, parsed data is as follows:
@@ -102,13 +83,11 @@ public class KMeans {
 		}
 	}
 	
+	// recalculate centroids based on mean
 	public void calculateCentroids() {
-		double[] attributes = new double[dimensionality];
-		for (int a = 0; a < dimensionality; a++) {
-			attributes[a] = 0;
-		}
-		double size = 0;
 		for (int a = 0; a < k; a++) {
+			double[] attributes = new double[dimensionality];
+			double size = 0;
 			for (int b = 0; b < numOfPoints; b++) {
 				if (clusteredPoints[a][b] != null) {
 					size++;
@@ -125,7 +104,7 @@ public class KMeans {
 			clusteredPoints[a][0] = point;
 		}
 		for (int a = 0; a < k; a++) {
-			for (int b = 1; b < numOfPoints; b++) {
+			for (int b = 1; b < numOfPoints + 1; b++) {
 				clusteredPoints[a][b] = null;
 			}
 		}
@@ -146,6 +125,7 @@ public class KMeans {
 		return index;
 	}
 	
+	// calculates sum of squared error value
 	public double sumOfSquaredErrors() {
 		sse = 0;
 		double centroid;
@@ -163,26 +143,35 @@ public class KMeans {
 		return sse;
 	}
 	
+	// the k-means algorithm
 	public void kMeans() {
-		readFile();
+		readFile();	// read file to get points
 		bestRun = Integer.MAX_VALUE;
 		bestSSE = Double.MAX_VALUE;
+		
+		// code wrapped in try/catch due to file writing
 		try {
-			FileWriter fw = new FileWriter("results.txt");
+			FileWriter fw = new FileWriter("results.txt");	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
+			
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
-				initCentroids();
+				initCentroids();	// get initial centroids
 				int counter = 1;
 				boolean improvement = true;
+				
 				while (counter <= this.i && improvement == true) {
+					
 					for (int j = 0; j < numOfPoints; j++) {
 						int index = classifyPoint(j);
 						clusteredPoints[index][j+1] = points.get(j);
 					}
+					
 					double sse1 = sse;
 					double sse2 = sumOfSquaredErrors();
+					
 					myOutfile.write("Iteration " + counter + ": SSE = " + sse2 + "\n");
+					
 					if (counter > 1) {
 						if ((sse1 - sse2) / sse1 < t) {
 							improvement = false;
@@ -192,10 +181,12 @@ public class KMeans {
 							}
 						}
 					}
+					
 					calculateCentroids();
 					counter++;
 				}
 			}
+			
 			myOutfile.write("\nBest Run: " + bestRun + ": SSE = " + bestSSE);
 			
 			myOutfile.flush();
