@@ -153,7 +153,7 @@ public class KMeans {
 		try {
 			FileWriter fw = new FileWriter("results.txt");	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
-			
+			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r);
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
 				initCentroids();	// get initial centroids
