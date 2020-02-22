@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class KMeans {
@@ -17,7 +16,7 @@ public class KMeans {
 	private int i;		// Max iterations
 	private double t;	// Conversion threshold
 	private int r;		// Number of runs
-	private ArrayList<Points> points = new ArrayList<Points>(); 	// Holds the points read from file
+	private Points[] points; 	// Holds the points read from file
 	private Points[][] clusteredPoints; 	// Holds clusters
 	private int numOfPoints;	// Number of points, obtained from file
 	private int dimensionality;	// Dimensionality of points, obtained from file
@@ -48,13 +47,16 @@ public class KMeans {
 			numOfPoints = Integer.parseInt(token[0]);
 			dimensionality = Integer.parseInt(token[1]);
 			clusteredPoints = new Points[k][numOfPoints+1];
+			points = new Points[numOfPoints];
+			int a = 0;
 			while ((line = lineReader.readLine())!=null) {
 				String[] token2 = line.split(" ");
 				Points temp = new Points();
 				for(int i = 0; i < token2.length; i++) {
 					temp.addAttributes(Double.parseDouble(token2[i]));
 				}
-				points.add(temp);
+				points[a] = temp;
+				a++;
 			}
 		} catch (Exception e) {
 			System.err.println("There was a problem with the file reader.");
@@ -79,7 +81,7 @@ public class KMeans {
 		Random rand = new Random();
 		for (int i = 0; i < k; i++) {
 			int x = rand.nextInt(numOfPoints);
-			clusteredPoints[i][0] = points.get(x);
+			clusteredPoints[i][0] = points[x];
 		}
 	}
 	
@@ -88,7 +90,7 @@ public class KMeans {
 		for (int a = 0; a < k; a++) {
 			double[] attributes = new double[dimensionality];
 			double size = 0;
-			for (int b = 0; b < numOfPoints; b++) {
+			for (int b = 0; b <= numOfPoints; b++) {
 				if (clusteredPoints[a][b] != null) {
 					size++;
 					for (int c = 0; c < dimensionality; c++) {
@@ -104,7 +106,7 @@ public class KMeans {
 			clusteredPoints[a][0] = point;
 		}
 		for (int a = 0; a < k; a++) {
-			for (int b = 1; b < numOfPoints + 1; b++) {
+			for (int b = 1; b <= numOfPoints; b++) {
 				clusteredPoints[a][b] = null;
 			}
 		}
@@ -116,7 +118,7 @@ public class KMeans {
 		double min = Double.MAX_VALUE;
 		int index = 0;
 		for (int i = 0; i < k; i++) {
-			distance = euclideanDistance(points.get(j), clusteredPoints[i][0]);
+			distance = euclideanDistance(points[j], clusteredPoints[i][0]);
 			if (distance < min) {
 				min = distance;
 				index = i;
@@ -128,12 +130,12 @@ public class KMeans {
 	// calculates sum of squared error value
 	public double sumOfSquaredErrors() {
 		sse = 0;
-		double centroid;
+		double centroid = 0;
 		for (int a = 0; a < k; a++) {
 			centroid = clusteredPoints[a][0].sumAttributes();
-			for (int b = 0; b < numOfPoints; b++) {
+			for (int b = 1; b <= numOfPoints; b++) {
 				if (clusteredPoints[a][b] != null) {
-					double point = points.get(b).sumAttributes();
+					double point = clusteredPoints[a][b].sumAttributes();
 					double diff = point - centroid;
 					diff *= diff;
 					sse += diff;
@@ -148,27 +150,32 @@ public class KMeans {
 		readFile();	// read file to get points
 		bestRun = Integer.MAX_VALUE;
 		bestSSE = Double.MAX_VALUE;
+		int counter;
+		boolean improvement;
+		double sse1;
+		double sse2;
 		
 		// code wrapped in try/catch due to file writing
 		try {
 			FileWriter fw = new FileWriter("results.txt");	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
-			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r);
+			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
+			
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
 				initCentroids();	// get initial centroids
-				int counter = 1;
-				boolean improvement = true;
+				counter = 1;
+				improvement = true;
 				
 				while (counter <= this.i && improvement == true) {
 					
 					for (int j = 0; j < numOfPoints; j++) {
 						int index = classifyPoint(j);
-						clusteredPoints[index][j+1] = points.get(j);
+						clusteredPoints[index][j+1] = points[j];
 					}
 					
-					double sse1 = sse;
-					double sse2 = sumOfSquaredErrors();
+					sse1 = sse;
+					sse2 = sumOfSquaredErrors();
 					
 					myOutfile.write("Iteration " + counter + ": SSE = " + sse2 + "\n");
 					
