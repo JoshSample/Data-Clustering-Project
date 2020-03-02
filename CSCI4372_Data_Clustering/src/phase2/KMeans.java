@@ -101,6 +101,14 @@ public class KMeans {
 		}
 	}
 	
+	public void randClusters() {
+		Random rand = new Random();
+		for (int i = 0; i < numOfPoints; i++) {
+			int x = rand.nextInt(k);
+			clusteredPoints[x][i] = points[i];
+		}
+	}
+	
 	// recalculate centroids based on mean
 	public void calculateCentroids() {
 		// this nested loop iterates over clusteredPoints
@@ -173,12 +181,14 @@ public class KMeans {
 			FileWriter fw = new FileWriter("results_" + f);	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
-			normalizeAttributes();	// normalizes attributes for each point
+		//	normalizeAttributes();	// normalizes attributes for each point
 			
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
-				initCentroids();	// get initial centroids
+			//	initCentroids();	// get initial centroids
+				randClusters();
+				calculateCentroids();
 				counter = 1;
 				improvement = true;
 				
