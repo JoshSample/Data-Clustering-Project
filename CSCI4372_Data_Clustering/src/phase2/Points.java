@@ -2,7 +2,7 @@ package phase2;
 
 //Joshua Sample
 //CSCI 4372
-//Phase 1: Basic K-Means
+//Phase 2: normalization and initialization
 
 import java.util.ArrayList;
 
