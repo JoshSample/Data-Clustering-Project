@@ -67,6 +67,17 @@ public class KMeans {
 		}
 	}
 	
+	// this method normalizes attributes for every point using min-max normalization
+	public void normalizeAttributes() {
+		for (int i = 0; i < numOfPoints; i++) {
+			points[i].setMaxAttribute();
+			points[i].setMinAttribute();
+			for (int j = 0; j < dimensionality; j++) {
+				points[i].getAttributes().set(j, points[i].minMaxNormalization(points[i].getAttributes().get(j)));
+			}
+		}
+	}
+	
 	// Since we only need to compare distance between a point and a centroid,
 	// this isn't a perfect implementation of euclidean distance as it would
 	// typically have a sqrt function. This however keeps computation time down.
@@ -162,6 +173,7 @@ public class KMeans {
 			FileWriter fw = new FileWriter("results_" + f);	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
+			normalizeAttributes();	// normalizes attributes for each point
 			
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
