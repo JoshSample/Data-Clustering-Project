@@ -24,8 +24,9 @@ public class KMeans {
 	private int numOfPoints;	// Number of points, obtained from file
 	private int dimensionality;	// Dimensionality of points, obtained from file
 	private double sse;	// tracks SSE value
-	private int bestRun;	// tracks best run (lowest SSE value)
-	private double bestSSE;	// tracks best SSE (lowest SSE value)
+	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
+	private double bestInitSSE;		// tracks best initial SSE (lowest initial SSE)
+	private int lowestIters;		// tracks quickest convergence
 	
 	// default constructor, sets values from command line
 	public KMeans(String a, int b, int c, double d, int e) {
@@ -169,8 +170,9 @@ public class KMeans {
 	// the k-means algorithm
 	public void kMeans() {
 		readFile();	// read file to get points
-		bestRun = Integer.MAX_VALUE;	// this sets bestRun
-		bestSSE = Double.MAX_VALUE;	// this sets bestSSE
+		bestInitSSE = Double.MAX_VALUE;	// this sets bestSSE
+		bestFinalSSE = Double.MAX_VALUE;
+		lowestIters = Integer.MAX_VALUE;
 		int counter;	// counter is needed for max iterations
 		boolean improvement;	// improvement is based off SSE value, exits while loop when false
 		double sse1;	// variable for previous SSE value
@@ -210,9 +212,8 @@ public class KMeans {
 					if (counter > 1) {
 						if ((sse1 - sse2) / sse1 < t) {
 							improvement = false;
-							if (sse2 < bestSSE) {
-								bestSSE = sse2;
-								bestRun = a + 1;
+							if (sse2 < bestFinalSSE) {
+								bestFinalSSE = sse2;
 							}
 						}
 					}
@@ -221,7 +222,7 @@ public class KMeans {
 				}
 			}
 			
-			myOutfile.write("\nBest Run: " + bestRun + ": SSE = " + bestSSE);
+			myOutfile.write("\nBest Final SSE = " + bestFinalSSE);
 			
 			myOutfile.flush();
 			myOutfile.close();
