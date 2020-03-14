@@ -27,6 +27,7 @@ public class KMeans {
 	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
 	private double bestInitSSE;		// tracks best initial SSE (lowest initial SSE)
 	private int lowestIters;		// tracks quickest convergence
+	private double aveAttribute;	// value for the average attribute
 	
 	// default constructor, sets values from command line
 	public KMeans(String a, int b, int c, double d, int e) {
@@ -79,6 +80,16 @@ public class KMeans {
 		}
 	}
 	
+	public void averageAttributes() {
+		aveAttribute = 0;
+		for (int i = 0; i < numOfPoints; i++) {
+			for (int j = 0; j < dimensionality; j++) {
+				aveAttribute += points[i].getAttributes().get(j);
+			}
+		}
+		aveAttribute = aveAttribute / (numOfPoints * dimensionality);
+	}
+	
 	// Since we only need to compare distance between a point and a centroid,
 	// this isn't a perfect implementation of euclidean distance as it would
 	// typically have a sqrt function. This however keeps computation time down.
@@ -102,6 +113,7 @@ public class KMeans {
 		}
 	}
 	
+	// this creates random clusters, for random partition method of initialization
 	public void randClusters() {
 		Random rand = new Random();
 		for (int i = 0; i < numOfPoints; i++) {
@@ -184,12 +196,13 @@ public class KMeans {
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
 		//	normalizeAttributes();	// normalizes attributes for each point
+		//	averageAttributes();	// finds the average attribute for every point
 			
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
 			//	initCentroids();	// get initial centroids
-				randClusters();
+				randClusters();		// perform random partition
 				calculateCentroids();
 				counter = 1;
 				improvement = true;
@@ -208,12 +221,21 @@ public class KMeans {
 					
 					myOutfile.write("Iteration " + counter + ": SSE = " + sse2 + "\n");
 					
+					// this if checks best initial sse value
+					if (counter == 1) {
+						if (sse < bestInitSSE)
+							bestInitSSE = sse;
+					}
 					// these if statements check if sse value has improved
 					if (counter > 1) {
 						if ((sse1 - sse2) / sse1 < t) {
 							improvement = false;
 							if (sse2 < bestFinalSSE) {
 								bestFinalSSE = sse2;
+							}
+							// this if gets lowest number of iterations
+							if (counter < lowestIters) {
+								lowestIters = counter;
 							}
 						}
 					}
@@ -222,7 +244,10 @@ public class KMeans {
 				}
 			}
 			
+		//	myOutfile.write("\nAverage Attribute = " + aveAttribute);
+			myOutfile.write("\nBest Initial SSE = " + bestInitSSE);
 			myOutfile.write("\nBest Final SSE = " + bestFinalSSE);
+			myOutfile.write("\nLowest Number of Iterations = " + lowestIters);
 			
 			myOutfile.flush();
 			myOutfile.close();
