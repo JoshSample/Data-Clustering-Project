@@ -80,6 +80,7 @@ public class KMeans {
 		}
 	}
 	
+	// this method finds the average attribute for the given points
 	public void averageAttributes() {
 		aveAttribute = 0;
 		for (int i = 0; i < numOfPoints; i++) {
