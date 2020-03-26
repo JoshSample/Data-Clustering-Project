@@ -28,6 +28,8 @@ public class KMeans {
 	private double bestInitSSE;		// tracks best initial SSE (lowest initial SSE)
 	private int lowestIters;		// tracks quickest convergence
 	private double aveAttribute;	// value for the average attribute
+	private double minAttribute;	// this is the minimum attribute for a given point
+	private double maxAttribute;	// this is the max attribute for a given point
 	
 	// default constructor, sets values from command line
 	public KMeans(String a, int b, int c, double d, int e) {
@@ -69,11 +71,28 @@ public class KMeans {
 		}
 	}
 	
+	// this method finds the minimum and maximum attributes for all points
+	public void findMinMax() {
+		maxAttribute = points[0].getAttributes().get(0);
+		minAttribute = points[0].getAttributes().get(0);
+		for (int i = 0; i < numOfPoints; i++) {
+			for (int j = 0; j < dimensionality; j++) {
+				if (points[i].getAttributes().get(j) < minAttribute)
+					minAttribute = points[i].getAttributes().get(j);
+				if (points[i].getAttributes().get(j) > maxAttribute)
+					maxAttribute = points[i].getAttributes().get(j);
+			}
+		}
+		// set each points min and max attributes to the ones found in the previous loop
+		for (int i = 0; i < numOfPoints; i++) {
+			points[i].setMaxAttribute(maxAttribute);
+			points[i].setMinAttribute(minAttribute);
+		}
+	}
+	
 	// this method normalizes attributes for every point using min-max normalization
 	public void normalizeAttributes() {
 		for (int i = 0; i < numOfPoints; i++) {
-			points[i].setMaxAttribute();
-			points[i].setMinAttribute();
 			for (int j = 0; j < dimensionality; j++) {
 				points[i].getAttributes().set(j, points[i].minMaxNormalization(points[i].getAttributes().get(j)));
 			}
@@ -196,15 +215,16 @@ public class KMeans {
 			FileWriter fw = new FileWriter("results_" + f);	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
-		//	normalizeAttributes();	// normalizes attributes for each point
-		//	averageAttributes();	// finds the average attribute for every point
+			findMinMax();			// finds min/max attributes before normalization
+			normalizeAttributes();	// normalizes attributes for each point
+			averageAttributes();	// finds the average attribute for every point
 			
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
-			//	initCentroids();	// get initial centroids
-				randClusters();		// perform random partition
-				calculateCentroids();
+				initCentroids();	// get initial centroids
+			//	randClusters();		// perform random partition
+			//	calculateCentroids();
 				counter = 1;
 				improvement = true;
 				
@@ -245,7 +265,7 @@ public class KMeans {
 				}
 			}
 			
-		//	myOutfile.write("\nAverage Attribute = " + aveAttribute);
+			myOutfile.write("\nAverage Attribute = " + aveAttribute);
 			myOutfile.write("\nBest Initial SSE = " + bestInitSSE);
 			myOutfile.write("\nBest Final SSE = " + bestFinalSSE);
 			myOutfile.write("\nLowest Number of Iterations = " + lowestIters);

@@ -30,22 +30,14 @@ public class Points {
 		return attribute;
 	}
 	
-	// this finds the minimum attribute for a point
-	public void setMinAttribute() {
-		minAttribute = attribute.get(0);
-		for (int i = 0; i < attribute.size(); i++) {
-			if (attribute.get(i) < minAttribute)
-				minAttribute = attribute.get(i);
-		}
+	// this sets the minimum attribute for a point
+	public void setMinAttribute(double min) {
+		minAttribute = min;
 	}
 	
-	// this finds the maximum attribute for a point
-	public void setMaxAttribute() {
-		maxAttribute = attribute.get(0);
-		for (int i = 0; i < attribute.size(); i++) {
-			if (attribute.get(i) > maxAttribute)
-				maxAttribute = attribute.get(i);
-		}
+	// this sets the maximum attribute for a point
+	public void setMaxAttribute(double max) {
+		maxAttribute = max;
 	}
 	
 	// this performs min-max normalization for an attribute of a given point in the range [0, 1]
