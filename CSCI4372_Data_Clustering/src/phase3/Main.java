@@ -9,13 +9,13 @@ import java.io.FileReader;
 
 // driver of the program
 public class Main {
-	private static String f;
-	private static int i;
-	private static double t;
-	private static int r;
-	private static Points[] points;
-	private static int numOfPoints;
-	private static int dimensionality;
+	private static String f;	// File name
+	private static int i;		// Max iterations
+	private static double t;	// Conversion threshold
+	private static int r;		// Number of runs
+	private static Points[] points;	// Holds the points read from file
+	private static int numOfPoints;	// Number of points, obtained from file
+	private static int dimensionality;	// Dimensionality of points, obtained from file
 	private static int kMax;	// max number of clusters
 	private static int kMin = 2;	// minimum number of clusters
 
@@ -25,8 +25,8 @@ public class Main {
 		i = Integer.parseInt(args[1]);
 		t = Double.parseDouble(args[2]);
 		r = Integer.parseInt(args[3]);
-		readFile();
-		// create a kMeans object which will run the algorithm
+		readFile();	// read file to obtain data
+		// create a kMeans object which will run the algorithm k times to find optimal clusters
 		for (int k = kMin; k < kMax; k++) {
 			KMeans cluster = new KMeans(f, k, i, t, r, points, numOfPoints, dimensionality, kMax);
 			cluster.kMeans();
@@ -47,7 +47,7 @@ public class Main {
 				numOfPoints = Integer.parseInt(token[0]);
 				dimensionality = Integer.parseInt(token[1]);
 				points = new Points[numOfPoints];
-				kMax = (int) Math.round(Math.sqrt(numOfPoints/2));
+				kMax = (int) Math.round(Math.sqrt(numOfPoints/2));	// kMax is calculated by rounding the sqrt of the number of points over 2
 				int a = 0;
 				while ((line = lineReader.readLine())!=null) {
 					String[] token2 = line.split(" ");

@@ -27,11 +27,9 @@ public class KMeans {
 	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
 	private double minAttribute;	// this is the minimum attribute for a given point
 	private double maxAttribute;	// this is the max attribute for a given point
-	private int kMax;	// max number of clusters
-	private int kMin = 2;	// minimum number of clusters
 	private double S_b;	// trace of the between cluster scatter
 	
-	// default constructor, sets values from command line
+	// default constructor, sets values from main
 	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, int km) {
 		f = a;
 		k = b;
@@ -43,39 +41,6 @@ public class KMeans {
 		dimensionality = dim;
 		clusteredPoints = new Points[k][numOfPoints];
 		centroids = new Points[k];
-		kMax = km;
-	}
-	
-	// reads file, parsed data is as follows:
-	// after the first line, each line is a point and thus stored in the array points[].
-	// each attribute in the lines, separated by blanks, are new attributes for a given point
-	public void readFile() {
-		BufferedReader lineReader = null;
-		try {
-			FileReader fr = new FileReader("./" + f);
-			lineReader = new BufferedReader(fr);
-			String line = null;
-			line = lineReader.readLine();
-			String[] token = line.split(" ");
-			numOfPoints = Integer.parseInt(token[0]);
-			dimensionality = Integer.parseInt(token[1]);
-			clusteredPoints = new Points[k][numOfPoints];
-			centroids = new Points[k];
-			points = new Points[numOfPoints];
-			kMax = (int) Math.round(Math.sqrt(numOfPoints/2));
-			int a = 0;
-			while ((line = lineReader.readLine())!=null) {
-				String[] token2 = line.split(" ");
-				Points temp = new Points();
-				for(int i = 0; i < token2.length; i++) {
-					temp.addAttributes(Double.parseDouble(token2[i]));
-				}
-				points[a] = temp;
-				a++;
-			}
-		} catch (Exception e) {
-			System.err.println("There was a problem with the file reader.");
-		}
 	}
 	
 	// this method finds the minimum and maximum attributes for all points
@@ -186,6 +151,7 @@ public class KMeans {
 		return sse;
 	}
 	
+	// finds the trace of the between cluster scatter matrix, for Calinski–Harabasz index
 	public void findBetweenClusterScatter() {
 		double tSSE = 0;	// total sum of squares value
 		double[] attributes = new double[dimensionality];	// This will have the mean attributes for each attribute in the data set
@@ -217,7 +183,7 @@ public class KMeans {
 		
 		// code wrapped in try/catch due to file writing
 		try {
-			FileWriter fw = new FileWriter("results_" + f + "_" + k + ".txt");	// results stored in file "results.txt"
+			FileWriter fw = new FileWriter("results_" + f + "_" + k + ".txt");	// results stored in file
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
 			//findMinMax();			// finds min/max attributes before normalization
@@ -260,11 +226,12 @@ public class KMeans {
 					counter++;	// increment counter
 				}
 			}
+			// run method to find S_b
 			findBetweenClusterScatter();
+			// calculate Calinski–Harabasz score
 			CH = ((numOfPoints - k) / (k - 1)) * (S_b / bestFinalSSE);
+			// output to file
 			myOutfile.write("\nCalinski–Harabasz Score: " + CH);
-
-
 
 			myOutfile.flush();
 			myOutfile.close();
