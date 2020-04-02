@@ -25,21 +25,25 @@ public class KMeans {
 	private int dimensionality;	// Dimensionality of points, obtained from file
 	private double sse;	// tracks SSE value
 	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
-	private double bestInitSSE;		// tracks best initial SSE (lowest initial SSE)
-	private int lowestIters;		// tracks quickest convergence
-	private double aveAttribute;	// value for the average attribute
 	private double minAttribute;	// this is the minimum attribute for a given point
 	private double maxAttribute;	// this is the max attribute for a given point
 	private int kMax;	// max number of clusters
+	private int kMin = 2;	// minimum number of clusters
 	private double S_b;	// trace of the between cluster scatter
 	
 	// default constructor, sets values from command line
-	public KMeans(String a, int b, int c, double d, int e) {
+	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, int km) {
 		f = a;
 		k = b;
 		i = c;
 		t = d;
 		r = e;
+		points = p;
+		numOfPoints = num;
+		dimensionality = dim;
+		clusteredPoints = new Points[k][numOfPoints];
+		centroids = new Points[k];
+		kMax = km;
 	}
 	
 	// reads file, parsed data is as follows:
@@ -100,17 +104,6 @@ public class KMeans {
 				points[i].getAttributes().set(j, points[i].minMaxNormalization(points[i].getAttributes().get(j)));
 			}
 		}
-	}
-	
-	// this method finds the average attribute for the given points
-	public void averageAttributes() {
-		aveAttribute = 0;
-		for (int i = 0; i < numOfPoints; i++) {
-			for (int j = 0; j < dimensionality; j++) {
-				aveAttribute += points[i].getAttributes().get(j);
-			}
-		}
-		aveAttribute = aveAttribute / (numOfPoints * dimensionality);
 	}
 	
 	// Since we only need to compare distance between a point and a centroid,
@@ -212,15 +205,11 @@ public class KMeans {
 			tSSE += euclideanDistance(meanPoint, points[i]);
 		}
 		// once total sum of squares has been calculated, subtract tSSE from the SSE value
-		S_b = tSSE - sse;
+		S_b = tSSE - bestFinalSSE;
 	}
 	
 	// the k-means algorithm
 	public void kMeans() {
-		readFile();	// read file to get points
-		bestInitSSE = Double.MAX_VALUE;	// this sets bestSSE
-		bestFinalSSE = Double.MAX_VALUE;	// sets bestFinalSSE
-		lowestIters = Integer.MAX_VALUE;	// sets lowestIters
 		int counter;	// counter is needed for max iterations
 		boolean improvement;	// improvement is based off SSE value, exits while loop when false
 		double sse1;	// variable for previous SSE value
@@ -228,13 +217,14 @@ public class KMeans {
 		
 		// code wrapped in try/catch due to file writing
 		try {
-			FileWriter fw = new FileWriter("results_" + f);	// results stored in file "results.txt"
+			FileWriter fw = new FileWriter("results_" + f + "_" + k + ".txt");	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
-			findMinMax();			// finds min/max attributes before normalization
-			normalizeAttributes();	// normalizes attributes for each point
-			averageAttributes();	// finds the average attribute for every point
-			
+			//findMinMax();			// finds min/max attributes before normalization
+			//normalizeAttributes();	// normalizes attributes for each point
+
+			double CH = 0;	// the Calinski–Harabasz value
+			bestFinalSSE = Double.MAX_VALUE;	// sets bestFinalSSE
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
 				myOutfile.write("\nRun " + (a + 1) + "\n" + "-----\n");
@@ -242,26 +232,21 @@ public class KMeans {
 				calculateCentroids();	// get centroids from partition
 				counter = 1;
 				improvement = true;
-				
+
 				// this loop is for the iterations, and can exit if improvement is false (based on SSE improvement)
 				while (counter <= this.i && improvement == true) {
-					
+
 					// classifies each point to an appropriate cluster
 					for (int j = 0; j < numOfPoints; j++) {
 						int index = classifyPoint(j);
 						clusteredPoints[index][j] = points[j];
 					}
-					
+
 					sse1 = sse;	// sse1 equals previous sse value
 					sse2 = sumOfSquaredErrors();	// sse2 equals current value
-					
+
 					myOutfile.write("Iteration " + counter + ": SSE = " + sse2 + "\n");
-					
-					// this if checks best initial sse value
-					if (counter == 1) {
-						if (sse < bestInitSSE)
-							bestInitSSE = sse;
-					}
+
 					// these if statements check if sse value has improved
 					if (counter > 1) {
 						if ((sse1 - sse2) / sse1 < t) {
@@ -269,22 +254,18 @@ public class KMeans {
 							if (sse2 < bestFinalSSE) {
 								bestFinalSSE = sse2;
 							}
-							// this if gets lowest number of iterations
-							if (counter < lowestIters) {
-								lowestIters = counter;
-							}
 						}
 					}
 					calculateCentroids();	// calculate centroids based on mean
 					counter++;	// increment counter
 				}
 			}
-			
-			myOutfile.write("\nAverage Attribute = " + aveAttribute);
-			myOutfile.write("\nBest Initial SSE = " + bestInitSSE);
-			myOutfile.write("\nBest Final SSE = " + bestFinalSSE);
-			myOutfile.write("\nLowest Number of Iterations = " + lowestIters);
-			
+			findBetweenClusterScatter();
+			CH = ((numOfPoints - k) / (k - 1)) * (S_b / bestFinalSSE);
+			myOutfile.write("\nCalinski–Harabasz Score: " + CH);
+
+
+
 			myOutfile.flush();
 			myOutfile.close();
 		} catch (Exception e) {
