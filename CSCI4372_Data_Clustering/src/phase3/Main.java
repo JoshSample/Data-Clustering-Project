@@ -26,9 +26,9 @@ public class Main {
 		t = Double.parseDouble(args[2]);
 		r = Integer.parseInt(args[3]);
 		readFile();	// read file to obtain data
-		// create a kMeans object which will run the algorithm k times to find optimal clusters
-		for (int k = kMin; k < kMax; k++) {
-			KMeans cluster = new KMeans(f, k, i, t, r, points, numOfPoints, dimensionality, kMax);
+		// create a KMeans object which will run the algorithm k times to find optimal clusters
+		for (int k = kMin; k <= kMax; k++) {
+			KMeans cluster = new KMeans(f, k, i, t, r, points, numOfPoints, dimensionality);
 			cluster.kMeans();
 		}
 	}
