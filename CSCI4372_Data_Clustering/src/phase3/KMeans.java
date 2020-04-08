@@ -22,14 +22,15 @@ public class KMeans {
 	private int numOfPoints;	// Number of points, obtained from file
 	private int dimensionality;	// Dimensionality of points, obtained from file
 	private double sse;	// tracks SSE value
-	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
+	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run) also used in the Calinski–Harabasz score
 	private double minAttribute;	// this is the minimum attribute for a given point
 	private double maxAttribute;	// this is the max attribute for a given point
 	private double S_b;	// trace of the between cluster scatter
-	private double[] ai;
+	private double[] ai;	// mean distance between a point and its cluster
+	private double[] bi;	// mean distance between a point from one cluster to the closest cluster
 	
 	// default constructor, sets values from main
-	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, int km) {
+	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim) {
 		f = a;
 		k = b;
 		i = c;
@@ -41,6 +42,7 @@ public class KMeans {
 		clusteredPoints = new Points[k][numOfPoints];
 		centroids = new Points[k];
 		ai = new double[k];
+		bi = new double[k];
 	}
 	
 	// this method finds the minimum and maximum attributes for all points
@@ -174,7 +176,8 @@ public class KMeans {
 		S_b = tSSE - bestFinalSSE;
 	}
 	
-	public Points getRandPoint(int i) {
+	// grabs first point from a cluster
+	public Points getFirstPoint(int i) {
 		for (int j = 0; j < numOfPoints; j++) {
 			if (clusteredPoints[i][j] != null)
 				return clusteredPoints[i][j];
@@ -182,9 +185,11 @@ public class KMeans {
 		return null;
 	}
 	
+	// finds a(i) for every cluster
+	// determined by taking a point from a cluster and taking the average euclidean distance between it and every point in the cluster
 	public void findMeanInOwnCluster() {
 		for (int i = 0; i < k; i++) {
-			Points point = getRandPoint(i);
+			Points point = getFirstPoint(i);
 			double size = 0;
 			double sum = 0;
 			for (int j = 0; j < numOfPoints; j++) {
@@ -196,6 +201,57 @@ public class KMeans {
 			}
 			ai[i] = sum / size;
 		}
+	}
+	
+	// finds b(i) for each other cluster, the mean distance to the closest cluster
+	public void findMeanInOtherCluster(int i) {
+		// pass i in to get first point, and to prevent checking itself for closest cluster
+		Points point = getFirstPoint(i);
+		if (point == null) return;	// occasionally there is overlap in clusters, so sometimes this is null
+		double temp = Double.MAX_VALUE;
+		// this checks each cluster, besides a points own cluster, for the average distance between another clusters points and a clusters point
+		for (int j = 0; j < k; j++) {
+			double size = 0;
+			double sum = 0;
+			if (i != j) {
+				for (int x = 0; x < numOfPoints; x++) {
+					if (clusteredPoints[j][x] != null) {
+						size++;
+						double dis = euclideanDistance(clusteredPoints[j][x], point);
+						sum += Math.sqrt(dis);
+					}
+				}
+				sum /= size;
+				// once average distance has been calculated, this determines which average minimum distance is a respective clusters b(i) 
+				if (temp > sum)
+					temp = sum;
+			}
+		}
+		bi[i] = temp;
+	}
+	
+	// finds silhouette width from these criteria
+	// it goes through each clusters respective a(i) value and b(i) value
+	// of these the cluster with the greatest silhouette coefficient is the best 
+	public double silhouetteWidth() {
+		double SW = 0;
+		double temp = Double.MIN_VALUE;
+		for (int i = 0; i < k; i++) {
+			if (ai[i] < bi[i]) {
+				SW = 1 - (ai[i] / bi[i]);
+			}
+			else if (ai[i] == bi[i]) {
+				SW = 0;
+			}
+			else {
+				SW = (bi[i] / ai[i]) - 1;
+			}
+			// checks best silhouette width
+			if (SW > temp) {
+				temp = SW;
+			}
+		}
+		return temp;
 	}
 	
 	// the k-means algorithm
@@ -210,10 +266,8 @@ public class KMeans {
 			FileWriter fw = new FileWriter("results_" + f + "_" + k + ".txt");	// results stored in file
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
-			//findMinMax();			// finds min/max attributes before normalization
-			//normalizeAttributes();	// normalizes attributes for each point
-
-			double CH = 0;	// the Calinski–Harabasz value
+			findMinMax();			// finds min/max attributes before normalization
+			normalizeAttributes();	// normalizes attributes for each point
 			bestFinalSSE = Double.MAX_VALUE;	// sets bestFinalSSE
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
@@ -243,22 +297,29 @@ public class KMeans {
 							improvement = false;
 							if (sse2 < bestFinalSSE) {
 								bestFinalSSE = sse2;
+								// since this will be the most optimal clustering, run methods to find ai and bi
+								// which are needed for calculating silhouette width
+								findMeanInOwnCluster();	// finds a(i) for each cluster
+								for (int i = 0; i < k; i++) {	// finds b(i) for each cluster
+									findMeanInOtherCluster(i);
+								}
 							}
 						}
 					}
-					findMeanInOwnCluster();
 					calculateCentroids();	// calculate centroids based on mean
 					counter++;	// increment counter
 				}
-				
 			}
 			// run method to find S_b
 			findBetweenClusterScatter();
+			// Calculate silhouette width
+			double SW = silhouetteWidth();
 			// calculate Calinski–Harabasz score
-			CH = ((numOfPoints - k) / (k - 1)) * (S_b / bestFinalSSE);
+			double CH = ((numOfPoints - k) / (k - 1)) * (S_b / bestFinalSSE);
+			
 			// output to file
 			myOutfile.write("\nCalinski–Harabasz Score: " + CH);
-
+			myOutfile.write("\nSilhouette Width: " + SW);
 			myOutfile.flush();
 			myOutfile.close();
 		} catch (Exception e) {
