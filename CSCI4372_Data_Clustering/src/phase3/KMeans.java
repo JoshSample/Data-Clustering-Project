@@ -26,6 +26,7 @@ public class KMeans {
 	private double minAttribute;	// this is the minimum attribute for a given point
 	private double maxAttribute;	// this is the max attribute for a given point
 	private double S_b;	// trace of the between cluster scatter
+	private double[] ai;
 	
 	// default constructor, sets values from main
 	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, int km) {
@@ -39,6 +40,7 @@ public class KMeans {
 		dimensionality = dim;
 		clusteredPoints = new Points[k][numOfPoints];
 		centroids = new Points[k];
+		ai = new double[k];
 	}
 	
 	// this method finds the minimum and maximum attributes for all points
@@ -172,6 +174,30 @@ public class KMeans {
 		S_b = tSSE - bestFinalSSE;
 	}
 	
+	public Points getRandPoint(int i) {
+		for (int j = 0; j < numOfPoints; j++) {
+			if (clusteredPoints[i][j] != null)
+				return clusteredPoints[i][j];
+			}
+		return null;
+	}
+	
+	public void findMeanInOwnCluster() {
+		for (int i = 0; i < k; i++) {
+			Points point = getRandPoint(i);
+			double size = 0;
+			double sum = 0;
+			for (int j = 0; j < numOfPoints; j++) {
+				if (clusteredPoints[i][j] != null) {
+					size++;
+					double dis = euclideanDistance(clusteredPoints[i][j], point);
+					sum += Math.sqrt(dis);
+				}
+			}
+			ai[i] = sum / size;
+		}
+	}
+	
 	// the k-means algorithm
 	public void kMeans() {
 		int counter;	// counter is needed for max iterations
@@ -220,9 +246,11 @@ public class KMeans {
 							}
 						}
 					}
+					findMeanInOwnCluster();
 					calculateCentroids();	// calculate centroids based on mean
 					counter++;	// increment counter
 				}
+				
 			}
 			// run method to find S_b
 			findBetweenClusterScatter();
