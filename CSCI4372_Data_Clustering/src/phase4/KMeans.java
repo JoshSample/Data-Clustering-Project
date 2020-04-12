@@ -11,6 +11,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Random;
 
+import phase3.Points;
+
 // this class holds all the methods needed for the algorithm
 public class KMeans {
 	private String f;	// File name
@@ -21,6 +23,7 @@ public class KMeans {
 	private Points[] points; 	// Holds the points read from file
 	private Points[] centroids;	// Holds centroids
 	private Points[][] clusteredPoints; 	// Holds clustered points
+	private Points trueClusters[][];
 	private int numOfPoints;	// Number of points, obtained from file
 	private int dimensionality;	// Dimensionality of points, obtained from file
 	private double sse;	// tracks SSE value
@@ -29,43 +32,19 @@ public class KMeans {
 	private double maxAttribute;	// this is the max attribute for a given point
 	
 	// default constructor, sets values from command line
-	public KMeans(String a, int b, int c, double d, int e) {
+	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, Points[][] tC) {
 		f = a;
 		k = b;
 		i = c;
 		t = d;
 		r = e;
-	}
-	
-	// reads file, parsed data is as follows:
-	// after the first line, each line is a point and thus stored in the array points[].
-	// each attribute in the lines, separated by blanks, are new attributes for a given point
-	public void readFile() {
-		BufferedReader lineReader = null;
-		try {
-			FileReader fr = new FileReader("./phase4/" + f);
-			lineReader = new BufferedReader(fr);
-			String line = null;
-			line = lineReader.readLine();
-			String[] token = line.split(" ");
-			numOfPoints = Integer.parseInt(token[0]);
-			dimensionality = Integer.parseInt(token[1]);
-			clusteredPoints = new Points[k][numOfPoints];
-			centroids = new Points[k];
-			points = new Points[numOfPoints];
-			int a = 0;
-			while ((line = lineReader.readLine())!=null) {
-				String[] token2 = line.split(" ");
-				Points temp = new Points();
-				for(int i = 0; i < token2.length; i++) {
-					temp.addAttributes(Double.parseDouble(token2[i]));
-				}
-				points[a] = temp;
-				a++;
-			}
-		} catch (Exception e) {
-			System.err.println("There was a problem with the file reader.");
-		}
+		points = p;
+		numOfPoints = num;
+		dimensionality = dim;
+		trueClusters = new Points[k][numOfPoints];
+		trueClusters = tC;
+		clusteredPoints = new Points[k][numOfPoints];
+		centroids = new Points[k];
 	}
 	
 	// this method finds the minimum and maximum attributes for all points
@@ -178,7 +157,6 @@ public class KMeans {
 	
 	// the k-means algorithm
 	public void kMeans() {
-		readFile();	// read file to get points
 		bestFinalSSE = Double.MAX_VALUE;
 		int counter;	// counter is needed for max iterations
 		boolean improvement;	// improvement is based off SSE value, exits while loop when false
