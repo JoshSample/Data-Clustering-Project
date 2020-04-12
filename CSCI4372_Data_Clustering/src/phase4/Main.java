@@ -19,7 +19,7 @@ public class Main {
 	private static Points[] points;	// Holds the points read from file
 	private static int numOfPoints;	// Number of points, obtained from file
 	private static int dimensionality;	// Dimensionality of points, obtained from file
-	private static Points trueClusters[][];
+	private static Points trueClusters[][];	// true clusters based on the data from the file
 
 	public static void main(String[] args) {
 		// each argument from the command line is instantiated as the following variables

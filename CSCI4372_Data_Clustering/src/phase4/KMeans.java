@@ -23,13 +23,20 @@ public class KMeans {
 	private Points[] points; 	// Holds the points read from file
 	private Points[] centroids;	// Holds centroids
 	private Points[][] clusteredPoints; 	// Holds clustered points
-	private Points trueClusters[][];
+	private Points trueClusters[][];	// true clusters based on the data from the file
 	private int numOfPoints;	// Number of points, obtained from file
 	private int dimensionality;	// Dimensionality of points, obtained from file
 	private double sse;	// tracks SSE value
 	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
 	private double minAttribute;	// this is the minimum attribute for a given point
 	private double maxAttribute;	// this is the max attribute for a given point
+	private int TP;
+	private int TN;
+	private int FP;
+	private int FN;
+	private double bestRand;
+	private double bestJaccard;
+	private double bestFM;
 	
 	// default constructor, sets values from command line
 	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, Points[][] tC) {
@@ -155,9 +162,55 @@ public class KMeans {
 		return sse;
 	}
 	
+	public void findPairwiseMeasures() {
+		TP = 0; 
+		TN = 0;
+		FP = 0;
+		FN = 0;
+		for (int i = 0; i < k; i++) {
+			for (int j = 0; j < numOfPoints; j++) {
+				if (trueClusters[i][j] != null || clusteredPoints[i][j] != null) {
+					if (trueClusters[i][j] == clusteredPoints[i][j])
+						TP++;
+					else if (trueClusters[i][j] == null && clusteredPoints[i][j] != null) 
+						FP++;
+					else if (trueClusters[i][j] != null && clusteredPoints[i][j] == null) 
+						FN++;
+				}
+				else
+					TN++;
+			}
+		}
+	}
+	
+	public double randStatistic() {
+		double rand;
+		double N = TP + TN + FP + FN;
+		rand = (TP + TN) / N;
+		return rand;
+	}
+	
+	public double jaccardCoefficient() {
+		double temp = TP + FP + FN;
+		double jaccard = TP / temp;
+		return jaccard;
+	}
+	
+	public double fowlkesMallows() {
+		double temp1 = TP + FP;
+		double temp2 = TP + FN;
+		double prec = TP / temp1;
+		double recall = TP / temp2;
+		double fm = Math.sqrt(prec * recall);
+		return fm;
+	}
+	
 	// the k-means algorithm
 	public void kMeans() {
 		bestFinalSSE = Double.MAX_VALUE;
+		bestRand = Double.MIN_VALUE;
+		bestJaccard = Double.MIN_VALUE;
+		bestFM = Double.MIN_VALUE;
 		int counter;	// counter is needed for max iterations
 		boolean improvement;	// improvement is based off SSE value, exits while loop when false
 		double sse1;	// variable for previous SSE value
@@ -168,8 +221,8 @@ public class KMeans {
 			FileWriter fw = new FileWriter("results_" + f);	// results stored in file "results.txt"
 			BufferedWriter myOutfile = new BufferedWriter(fw);
 			myOutfile.write("test " + f + " " + k + " " + i + " " + t + " " + r + "\n");
-		//	findMinMax();			// finds min/max attributes before normalization
-		//	normalizeAttributes();	// normalizes attributes for each point
+			findMinMax();			// finds min/max attributes before normalization
+			normalizeAttributes();	// normalizes attributes for each point
 			
 			// this loop is for the number of runs
 			for (int a = 0; a < r; a++) {
@@ -196,8 +249,21 @@ public class KMeans {
 					if (counter > 1) {
 						if ((sse1 - sse2) / sse1 < t) {
 							improvement = false;
+							findPairwiseMeasures();
+							double rand = randStatistic();
+							double jaccard = jaccardCoefficient();
+							double fm = fowlkesMallows();
 							if (sse2 < bestFinalSSE) {
 								bestFinalSSE = sse2;
+							}
+							if (rand > bestRand) {
+								bestRand = rand;
+							}
+							if (jaccard > bestJaccard) {
+								bestJaccard = jaccard;
+							}
+							if (fm > bestFM) {
+								bestFM = fm;
 							}
 						}
 					}
@@ -207,7 +273,9 @@ public class KMeans {
 			}
 			
 			myOutfile.write("\nBest Final SSE = " + bestFinalSSE);
-			
+			myOutfile.write("\nBest Rand = " + bestRand);
+			myOutfile.write("\nBest Jaccard = " + bestJaccard);
+			myOutfile.write("\nBest FM = " + bestFM);
 			myOutfile.flush();
 			myOutfile.close();
 		} catch (Exception e) {
