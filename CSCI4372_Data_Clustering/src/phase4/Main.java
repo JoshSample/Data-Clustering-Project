@@ -46,6 +46,7 @@ public class Main {
 			lineReader = new BufferedReader(fr);
 			String line = null;
 			line = lineReader.readLine();
+			line = line.trim();
 			String[] token = line.split(" ");
 			numOfPoints = Integer.parseInt(token[0]);
 			dimensionality = Integer.parseInt(token[1]) - 1;
@@ -54,10 +55,12 @@ public class Main {
 			trueClusters = new Points[k][numOfPoints];
 			int a = 0;
 			while ((line = lineReader.readLine())!=null) {
-				String[] token2 = line.split(" ");
+				line = line.trim();
+				String[] token2 = line.split("\\s+");
 				Points temp = new Points();
 				int clust = 0;	// index of the true cluster that the point belongs to
 				for(int i = 0; i < token2.length; i++) {
+					token2[i] = token2[i].trim();
 					if (i < token2.length - 1)
 						temp.addAttributes(Double.parseDouble(token2[i]));
 					else
