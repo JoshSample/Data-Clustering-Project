@@ -30,13 +30,13 @@ public class KMeans {
 	private double bestFinalSSE;	// tracks best final SSE (lowest SSE value for every run)
 	private double minAttribute;	// this is the minimum attribute for a given point
 	private double maxAttribute;	// this is the max attribute for a given point
-	private int TP;
-	private int TN;
-	private int FP;
-	private int FN;
-	private double bestRand;
-	private double bestJaccard;
-	private double bestFM;
+	private int TP;		// true positive
+	private int TN;		// true negative
+	private int FP;		// false positive
+	private int FN;		// false negative
+	private double bestRand;	// tracks best Rand Statistic value
+	private double bestJaccard;	// tracks best Jaccard Coefficient value
+	private double bestFM;		// tracks best Fowlkes-Mallows Index value
 	
 	// default constructor, sets values from command line
 	public KMeans(String a, int b, int c, double d, int e, Points[] p, int num, int dim, Points[][] tC) {
@@ -162,7 +162,9 @@ public class KMeans {
 		return sse;
 	}
 	
+	// finds TP, TN, FP, and FN values by comparing trueClusters to the clusters created by the algorithm
 	public void findPairwiseMeasures() {
+		// sets values to 0
 		TP = 0; 
 		TN = 0;
 		FP = 0;
@@ -170,32 +172,39 @@ public class KMeans {
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < numOfPoints; j++) {
 				if (trueClusters[i][j] != null || clusteredPoints[i][j] != null) {
+					// if the point is in both clusters TP increases
 					if (trueClusters[i][j] == clusteredPoints[i][j])
 						TP++;
+					// if the point is in the generated cluster but not in the trueCluster FP increases
 					else if (trueClusters[i][j] == null && clusteredPoints[i][j] != null) 
 						FP++;
+					// if the point is in the trueCluster but not in the generated cluster FN increases
 					else if (trueClusters[i][j] != null && clusteredPoints[i][j] == null) 
 						FN++;
 				}
+				// else both clusters have the point not in the specific cluster so TN increases
 				else
 					TN++;
 			}
 		}
 	}
 	
+	// Calculates Rand Statistic
 	public double randStatistic() {
 		double rand;
-		double N = TP + TN + FP + FN;
+		double N = TP + TN + FP + FN;	// total of the pairwise measurements
 		rand = (TP + TN) / N;
 		return rand;
 	}
 	
+	// Calculates the Jaccard Coefficient
 	public double jaccardCoefficient() {
 		double temp = TP + FP + FN;
 		double jaccard = TP / temp;
 		return jaccard;
 	}
 	
+	// Calculates the Fowlkes-Mallows Index
 	public double fowlkesMallows() {
 		double temp1 = TP + FP;
 		double temp2 = TP + FN;
@@ -207,6 +216,7 @@ public class KMeans {
 	
 	// the k-means algorithm
 	public void kMeans() {
+		// sets tracking variables to values meant to be changed
 		bestFinalSSE = Double.MAX_VALUE;
 		bestRand = Double.MIN_VALUE;
 		bestJaccard = Double.MIN_VALUE;
@@ -249,6 +259,9 @@ public class KMeans {
 					if (counter > 1) {
 						if ((sse1 - sse2) / sse1 < t) {
 							improvement = false;
+							// since improvement = false, the algorithm has no change in SSE value
+							// implying the points are appropriately clustered 
+							// so now is when we find the pairwise measures and calculate the external validation
 							findPairwiseMeasures();
 							double rand = randStatistic();
 							double jaccard = jaccardCoefficient();
@@ -275,7 +288,7 @@ public class KMeans {
 			myOutfile.write("\nBest Final SSE = " + bestFinalSSE);
 			myOutfile.write("\nBest Rand = " + bestRand);
 			myOutfile.write("\nBest Jaccard = " + bestJaccard);
-			myOutfile.write("\nBest FM = " + bestFM);
+			myOutfile.write("\nBest Fowlkes-Mallows = " + bestFM);
 			myOutfile.flush();
 			myOutfile.close();
 		} catch (Exception e) {

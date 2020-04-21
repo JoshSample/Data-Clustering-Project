@@ -56,7 +56,7 @@ public class Main {
 			while ((line = lineReader.readLine())!=null) {
 				String[] token2 = line.split(" ");
 				Points temp = new Points();
-				int clust = 0;
+				int clust = 0;	// index of the true cluster that the point belongs to
 				for(int i = 0; i < token2.length; i++) {
 					if (i < token2.length - 1)
 						temp.addAttributes(Double.parseDouble(token2[i]));
