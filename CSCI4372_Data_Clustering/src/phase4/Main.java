@@ -3,7 +3,6 @@ package phase4;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-import phase3.Points;
 
 // Joshua Sample
 // CSCI 4372

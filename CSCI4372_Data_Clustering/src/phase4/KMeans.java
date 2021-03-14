@@ -11,8 +11,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Random;
 
-import phase3.Points;
-
 // this class holds all the methods needed for the algorithm
 public class KMeans {
 	private String f;	// File name
