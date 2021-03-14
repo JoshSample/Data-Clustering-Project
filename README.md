@@ -1,2 +1,2 @@
 # Data-Clustering-Project
-This is a project repo for my Data Clustering class, phase 1 being an implementation of K-Means.
+This is a project repo for my Data Clustering class, phase 1 being an implementation of the K-Means algorithm. Phase 2 is normalization and initialization, where attributes are normalized using min/max normalization and clusters are initialized with random initial clusters instead of random initial centers. Phase 3 is internal validation, using Calinski-Harabasz and Silhouette Coefficient indices for finding optimal number of clusters. Phase 4 is external validation, using the Rand Statistic, Jaccard Coefficient, and Fowlkes-Mallows index for finding the best partition.
